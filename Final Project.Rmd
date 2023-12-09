@@ -1,0 +1,286 @@
+---
+title: 'Assessing Seasonal Variability in Coastal New Hampshire Phytoplankton Populations:
+  A Comparative Analysis of 2021 and 2023 Data'
+author: "Leandra Bryant"
+date: "2023-12-08"
+output: 
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(leaflet)
+library(knitr)
+```
+
+```{r}
+file_path <- "C:\\Users\\lbrya\\OneDrive\\Documents\\BIOL 806 Final Project\\Weekly_NH_Coastal_Sampling.csv"
+
+Weekly_NH_Coastal_Sampling <- read.csv(file_path)
+```
+<pre>
+#Introduction
+##Phytoplankton, constituting less than 1% of the planet's photosynthetic biomass, are essential for marine and global environments, producing up to 80% of the world's oxygen and significantly contributing to organic matter production (Field et al., 1998). These microscopic organisms play a crucial role in mediating nutrient flow in marine ecosystems, influencing ecosystem structure and biogeochemical processes (Falkowski et al., 2000). The net primary production of phytoplankton supports energy transfer up the marine food chain, thereby contributing to ecosystem balance.
+##Phytoplankton blooms, while beneficial for primary production, can have adverse effects on the marine environment by altering oxygen concentrations and community composition. Climate change, particularly temperature variations, influences phytoplankton population dynamics, affecting nutrient uptake, community composition, and potentially leading to harmful algal blooms (Falkowski and Raven, 2013; Cross et al., 2015; Sommer et al., 2017).
+##The changes in phytoplankton abundance and composition have cascading effects on marine food webs, influencing trophic relationships and fisheries yield (Chapman et al., 2020; Pansch et al., 2014). Phytoplankton communities, encompassing over 5000 species globally, exhibit diverse biogeochemical functions. Diatoms, coccolithophores, and dinoflagellates, for example, contribute differently to carbon export, cloud formation, and ecosystem structure (Moore, 2008; Paasche, 2001).
+##Time series data, particularly in coastal ecosystems, are useful for understanding phytoplankton population dynamics (Corbière et al., 2007). Coastal ecosystems, covering only 6% of Earth's surface, contribute to global ecosystem services (Costanza et al., 2014). Changes in phytoplankton dynamics in these areas have implications for marine life, fisheries, and ecosystem health.
+##Coastal New Hampshire, part of the Gulf of Maine, serves as a model system for studying phytoplankton dynamics, especially in the face of climate change (Pershing et al., 2015). Despite the importance of phytoplankton in this region, there is a lack of comprehensive information on their variability. Conducting a weekly time series analysis over a year provides valuable insights into the factors influencing phytoplankton population dynamics in Coastal New Hampshire, which is crucial for predicting sustainable fisheries, modeling climate change effects, and managing ecosystem health in coastal areas (Short, 1992; Jones, 2000).
+#Methods
+##Whole seawater was collected at peak high tide from two locations, the coastal zone of North Beach in Hampton, New Hampshire, (hereafter referred to as Coastal; 42.9268659, - 70.7983751) and the Jackson Estuarine Laboratory in Durham, New Hampshire (hereafter referred to as JEL; 43.0920913, -70.8644661), weekly from June 2nd, 2021, through October 21st, 2021. This approach was repeated in 2023 extending from June 6th to  October 12th.
+##A 5.0-liter carboy of surface seawater was collected at each site, avoiding direct sunlight exposure, and transported to the laboratory for analysis within an hour of sampling. The National Data Buoy Center provided temperature and salinity data, while tide height information was obtained from US Harbors tide charts.
+##In assessing chlorophyll a concentration, triplicate samples were analyzed at each location. Seawater (100-300 mL) was gently filtered through 25 mm glass fiber filters. Chlorophyll a fluorescence was measured using an AquaFluor fluorometer. The resulting values were converted into chlorophyll concentrations (µg L-1) using a standard curve generated from purchased chlorophyll standards.
+##Biodiversity assessments involved two methods. First, approximately 20 mL of seawater from each location was filtered through 40-micron nylon mesh. Triplicate 5 mL samples were preserved using glutaraldehyde and later analyzed on a flow cytometer (Guava EasyCyte HT) to determine phytoplankton group-specific abundances, categorizing them into cyanobacteria, picoplankton, and nanoplankton. Second, 30 mL of water from each location was filtered through 300 µm mesh and observed live using a FlowCam. Phytoplankton assemblages of 20-200 µm were classified to the finest possible taxonomic level, with a minimum of 5000 replicates captured as images on the FlowCam per sample.
+##Statistical analyses were carried out using R Studio version 4.3.1. to depict the relationship between phytoplankton populations and environmental factors at each sampling site.
+#Results and Analysis
+#Chlorophyll Concentration
+##Chlorophyll concentrations exhibited variations across the observed years and locations (Figure 9). In 2021, the JEL site (Figure 1) showcased a relatively stable pattern, with chlorophyll values ranging from 4.04 to 21.47 ug/L. Conversely, the Coastal site (Figure 2) displayed a wider variability, with observed values from 0.62 to 37.88 ug/L. In 2023, both locations experienced fluctuations in chlorophyll concentration. In addition, there was an increase in maximum chlorophyll concentration at the Coastal site compared to 2021 data. 
+##Coastal, in 2021, exhibited a higher mean (11.93 ug/L) compared to 2023 (2.34 ug/L). Conversely, JEL displayed a more consistent mean chlorophyll concentration, with values of 8.32 ug/L in 2021 and 8.19 ug/L in 2023. The standard deviations emphasized the higher variability in chlorophyll concentrations at Coastal locations which was more evident in 2021.
+</pre>
+
+```{r}
+JEL <- Weekly_NH_Coastal_Sampling[Weekly_NH_Coastal_Sampling$Location == 'JEL', ]
+
+JEL$Date <- as.Date(JEL$Date, format = "%d-%b")
+
+ggplot(JEL, aes(x = Date, y = Chlorophyll..ug.L., fill = as.factor(Year))) +
+  geom_point(shape = 21, size = 3) +  
+  scale_fill_manual(values = c("2021" = "purple", "2023" = "pink")) +
+  labs(title = "JEL",
+       x = "Date",
+       y = "Chlorophyll (µg/L)",
+       fill = "Year") + 
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
+```
+Figure 1: Comparison of Chlorophyll abundance over time in 2021 and 2023 from the JEL
+
+```{r}
+Coastal <- Weekly_NH_Coastal_Sampling[Weekly_NH_Coastal_Sampling$Location == 'Coastal', ]
+
+Coastal$Date <- as.Date(Coastal$Date, format = "%d-%b")
+
+ggplot(Coastal, aes(x = Date, y = Chlorophyll..ug.L., fill = as.factor(Year))) +
+  geom_point(shape = 21, size = 3) +  
+  scale_fill_manual(values = c("2021" = "purple", "2023" = "pink")) +
+  labs(title = "Coastal",
+       x = "Date",
+       y = "Chlorophyll (µg/L)",
+       fill = "Year") + 
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
+```
+Figure 2: Comparison of Chlorophyll abundance over time in 2021 and 2023 from the Coast
+
+<pre>
+#Picoeukaryotes Abundance
+##Coastal consistently demonstrated a higher mean abundance in both 2021 and 2023 compared to JEL for picoeukaryotes. In 2021, JEL (Figure 3) exhibited a more diverse range of concentrations for picoeukaryotes, with a mean value of 14,895.82 cells/mL and a standard deviation of 22,582.50 cells/mL, suggesting a broader distribution of picoeukaryote populations. In contrast, the Coastal site (Figure 4) displayed a more stable trend during the same period, with a mean picoeukaryote abundance of 12,568.90 cells/mL and a standard deviation of 8,905.01 cells/mL (Figure 3).
+##In 2023, both locations experienced fluctuations in picoeukaryote abundance. JEL maintained a mean abundance of 12,799.70 cells/mL with a standard deviation of 8,584.80 cells/mL, indicating a relatively consistent level compared to 2021. On the other hand, the Coastal site showcased higher peak values in 2023, with a mean picoeukaryote abundance of 14,306.63 cells/mL and a standard deviation of 14,816.83 cells/mL, surpassing the levels recorded in 2021 (Figure 4).
+</pre>
+
+```{r}
+JEL <- Weekly_NH_Coastal_Sampling[Weekly_NH_Coastal_Sampling$Location == 'JEL', ]
+
+JEL$Date <- as.Date(JEL$Date, format = "%d-%b")
+
+ggplot(JEL, aes(x = Date, y = Picoeukaryotes..cells.ml., fill = as.factor(Year))) +
+  geom_point(shape = 21, size = 3) +  
+  scale_fill_manual(values = c("2021" = "purple", "2023" = "pink")) +
+  labs(title = "JEL",
+       x = "Date",
+       y = "Picoeukaryotes (cells/mL)",
+       fill = "Year") + 
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
+```
+Figure 3: Comparison of Picoeukaryotes abundance over time in 2021 and 2023 from the JEL
+
+```{r}
+Coastal <- Weekly_NH_Coastal_Sampling[Weekly_NH_Coastal_Sampling$Location == 'Coastal', ]
+
+Coastal$Date <- as.Date(Coastal$Date, format = "%d-%b")
+
+ggplot(Coastal, aes(x = Date, y = Picoeukaryotes..cells.ml., fill = as.factor(Year))) +
+  geom_point(shape = 21, size = 3) +  
+  scale_fill_manual(values = c("2021" = "purple", "2023" = "pink")) +
+  labs(title = "Coastal",
+       x = "Date",
+       y = "Picoeukaryotes (cells/mL)",
+       fill = "Year") + 
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
+```
+Figure 4: Comparison of Picoeukaryotes abundance over time in 2021 and 2023 from the Coast
+
+<pre>
+#Nanoeukaryotes Abundance
+##In 2021, Coastal (Figure 6) demonstrated a higher mean nanoeukaryotes abundance (1221.14 cells/mL) compared to 2023 (748.69 cells/mL). In contrast, the JEL site (Figure 5) experienced an increase in mean nanoeukaryotes abundance from 2021 (1020.88 cells/mL) to 2023 (1436.21 cells/mL). The standard deviations explain the variability in nanoeukaryotes abundance, with Coastal consistently exhibiting higher variability in both years (874.64 cells/mL in 2021 and 478.89 cells/mL in 2023).
+##Coastal consistently demonstrated elevated concentrations of nanoeukaryotes compared to the JEL site, aligning with the observed trends in mean values. The peak nanoeukaryotes abundance recorded in 2023 at the Coastal site reached 748.69 cells/mL, surpassing the data observed in 2021. 
+</pre>
+
+```{r}
+JEL <- Weekly_NH_Coastal_Sampling[Weekly_NH_Coastal_Sampling$Location == 'JEL', ]
+
+JEL$Date <- as.Date(JEL$Date, format = "%d-%b")
+
+ggplot(JEL, aes(x = Date, y = Nanoeukaryotes..cells.mL., fill = as.factor(Year))) +
+  geom_point(shape = 21, size = 3) +  
+  scale_fill_manual(values = c("2021" = "purple", "2023" = "pink")) +
+  labs(title = "JEL",
+       x = "Date",
+       y = "Nanoeukaryotes (cells/mL)",
+       fill = "Year") + 
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
+```
+Figure 5: Comparison of Nanoeukaryotes abundance over time in 2021 and 2023 from the JEL
+
+```{r}
+Coastal <- Weekly_NH_Coastal_Sampling[Weekly_NH_Coastal_Sampling$Location == 'Coastal', ]
+
+Coastal$Date <- as.Date(Coastal$Date, format = "%d-%b")
+
+ggplot(Coastal, aes(x = Date, y = Nanoeukaryotes..cells.mL., fill = as.factor(Year))) +
+  geom_point(shape = 21, size = 3) +  
+  scale_fill_manual(values = c("2021" = "purple", "2023" = "pink")) +
+  labs(title = "Coastal",
+       x = "Date",
+       y = "Nanoeukaryotes (cells/mL)",
+       fill = "Year") + 
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
+```
+Figure 6: Comparison of Nanoeukaryotes abundance over time in 2021 and 2023 from the Coast
+<pre>
+#Cyanobacteria Abundance
+##Cyanobacteria abundance exhibited notable variations across different locations and years, with Coastal consistently surpassing JEL in mean abundance during both 2021 and 2023. In 2021, JEL (Figure 7) had a mean cyanobacteria abundance of 1159.76 cells/mL with a standard deviation of 2428.70 cells/mL, whereas Coastal (Figure 8) exhibited a higher mean concentration of 4845.27 cells/mL with a standard deviation of 5521.23 cells/mL.
+##In 2023, the Coastal site experienced a significant increase in peak cyanobacteria abundance, reaching a mean value of 1577.03 cells/mL, surpassing the levels recorded in 2021. The standard deviation for Coastal sites in 2023 was 1651.94 cells/mL, indicating an increased variability in cyanobacteria populations. This heightened variability in cyanobacteria abundance at Coastal sites was more evident in 2021, as reflected by the higher standard deviation (Table 1). 
+</pre>
+
+```{r}
+JEL <- Weekly_NH_Coastal_Sampling[Weekly_NH_Coastal_Sampling$Location == 'JEL', ]
+
+JEL$Date <- as.Date(JEL$Date, format = "%d-%b")
+
+ggplot(JEL, aes(x = Date, y = Cyanobacteria..cells.mL., fill = as.factor(Year))) +
+  geom_point(shape = 21, size = 3) +  
+  scale_fill_manual(values = c("2021" = "purple", "2023" = "pink")) +
+  labs(title = "JEL",
+       x = "Date",
+       y = "Cyanobacteria (cells/mL)",
+       fill = "Year") + 
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
+```
+Figure 7: Comparison of Cyanobacteria abundance over time in 2021 and 2023 from the JEL
+
+```{r}
+Coastal <- Weekly_NH_Coastal_Sampling[Weekly_NH_Coastal_Sampling$Location == 'Coastal', ]
+
+Coastal$Date <- as.Date(Coastal$Date, format = "%d-%b")
+
+ggplot(Coastal, aes(x = Date, y = Cyanobacteria..cells.mL., fill = as.factor(Year))) +
+  geom_point(shape = 21, size = 3) +  
+  scale_fill_manual(values = c("2021" = "purple", "2023" = "pink")) +
+  labs(title = "Coastal",
+       x = "Date",
+       y = "Cyanobacteria (cells/mL)",
+       fill = "Year") + 
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust = 0.5))
+```
+Figure 8: Comparison of Cyanobacteria abundance over time in 2021 and 2023 from the Coast
+
+Table 1: Summary Table 
+```{r}
+Weekly_NH_Coastal_Sampling <- Weekly_NH_Coastal_Sampling %>%
+  mutate(Location_Type = ifelse(Location == 'JEL', 'JEL', 'Coastal'))
+
+summary_table <- Weekly_NH_Coastal_Sampling %>%
+  group_by(Location_Type, Year) %>%
+  summarise(
+    Mean_Chlorophyll = mean(`Chlorophyll..ug.L.`),
+    SD_Chlorophyll = sd(`Chlorophyll..ug.L.`),
+    Mean_Picoeukaryotes = mean(`Picoeukaryotes..cells.ml.`),
+    SD_Picoeukaryotes = sd(`Picoeukaryotes..cells.ml.`),
+    Mean_Nanoeukaryotes = mean(`Nanoeukaryotes..cells.mL.`),
+    SD_Nanoeukaryotes = sd(`Nanoeukaryotes..cells.mL.`),
+    Mean_Cyanobacteria = mean(`Cyanobacteria..cells.mL.`),
+    SD_Cyanobacteria = sd(`Cyanobacteria..cells.mL.`)
+  ) %>%
+  rename(
+    "Location Type" = Location_Type,
+    "Mean Chlorophyll" = Mean_Chlorophyll,
+    "SD Chlorophyll" = SD_Chlorophyll,
+    "Mean Picoeukaryotes" = Mean_Picoeukaryotes,
+    "SD Picoeukaryotes" = SD_Picoeukaryotes,
+    "Mean Nanoeukaryotes" = Mean_Nanoeukaryotes,
+    "SD Nanoeukaryotes" = SD_Nanoeukaryotes,
+    "Mean Cyanobacteria" = Mean_Cyanobacteria,
+    "SD Cyanobacteria" = SD_Cyanobacteria
+  )
+
+summary_table %>%
+  kable(format = "html", table.attr = "class='table table-bordered table-striped table-hover'",
+        caption = "Summary Statistics for 'JEL' and 'Coastal' Locations by Year")
+```
+
+```{r}
+leaflet(options = leafletOptions(interactive = FALSE)) %>%
+  addTiles() %>%
+  addMarkers(
+    lng = -70.8645, lat = 43.0921,
+    label = "Jackson Estuarine Laboratory",
+    labelOptions = labelOptions(noHide = TRUE)
+  ) %>%
+  addMarkers(
+    lng = -70.7983, lat = 42.9269,
+    label = "Coastal New Hampshire",
+    labelOptions = labelOptions(noHide = TRUE)
+  ) %>%
+  setView(lng = -70.874, lat = 43.042, zoom = 9.6)
+```
+Figure 9: Map of Jackson Estuarine Laboratory and Coastal Location 
+
+<pre>
+#Discussion 
+##The analysis of phytoplankton populations in Coastal New Hampshire over the years 2021 and 2023 provides valuable insights into the dynamics of these microscopic organisms and their response to environmental factors. The results reveal notable variations in chlorophyll concentration, picoeukaryote abundance, nanoeukaryote abundance, and cyanobacteria abundance between the two observed years and locations (Coastal and JEL).
+#Chlorophyll Concentration
+##The analysis of chlorophyll concentration highlighted significant differences between the Coastal and JEL sites, as well as variations across the two years. In 2021, Coastal exhibited a wider range of chlorophyll values and higher variability compared to JEL. However, in 2023, both locations experienced fluctuations, with the Coastal site showing an increase in maximum chlorophyll concentration. The mean chlorophyll concentration at Coastal was substantially higher in 2021 compared to 2023, suggesting a shift in the phytoplankton community structure. JEL, on the other hand, displayed a more consistent mean chlorophyll concentration over the two years. The higher standard deviations at Coastal in 2021 indicate greater variability in chlorophyll concentrations, possibly influenced by local environmental factors.
+#Picoeukaryotes Abundance
+##The assessment of picoeukaryote abundance revealed consistent patterns of higher mean abundance at Coastal compared to JEL in both 2021 and 2023. The data from 2021 indicated a broader distribution of picoeukaryote populations at JEL, as reflected in the higher mean and standard deviation. In 2023, while JEL maintained a relatively consistent level, the Coastal site showcased higher peak values, indicating a dynamic shift in picoeukaryote populations. The higher standard deviation at Coastal in 2023 suggests increased variability, possibly influenced by environmental factors that favor specific picoeukaryote species.
+#Nanoeukaryotes Abundance
+##Nanoeukaryote abundance exhibited variations across the years and locations. Coastal consistently demonstrated higher mean concentrations compared to JEL, aligning with the observed trends in mean values. The increased mean nanoeukaryotes abundance at JEL from 2021 to 2023 indicates a dynamic response to changing environmental conditions. The elevated variability in nanoeukaryotes abundance at Coastal, particularly in 2021, suggests factors influencing nanoeukaryote populations in this region.
+#Cyanobacteria Abundance
+##Cyanobacteria abundance displayed consistent patterns of higher mean concentrations at Coastal compared to JEL in both 2021 and 2023. The significant increase in peak cyanobacteria abundance at Coastal in 2023 suggests a dynamic response to environmental changes. The higher standard deviation at Coastal, especially in 2021, emphasized the variability in cyanobacteria populations, emphasizing the complex and potentially sensitive nature of these communities to environmental fluctuations.
+##Overall, the observed variability in phytoplankton populations highlights the dynamic nature of Coastal New Hampshire's marine ecosystem. The influence of environmental factors, such as temperature, salinity, and nutrient availability, on phytoplankton dynamics is evident in the observed patterns. These findings contribute to understanding the relationships between phytoplankton communities and their environment, providing a foundation for future research and continuous monitoring on the impacts of climate change and activities on coastal ecosystems. The data presented here are essential for informing ecosystem management strategies, sustaining fisheries, and predicting the response of phytoplankton populations to ongoing environmental changes in Coastal New Hampshire.
+#References 
+Chapman, E.J., Byron, C.J., Lasley-Rasher, R., Lipsky, C., Stevens, J.R. and Peters, R., 2020. Effects of climate change on coastal ecosystem food webs: Implications for aquaculture. Marine Environmental Research, 162, p.105103.
+Corbière, A., Metzl, N., Reverdin, G., Brunet, C. and Takahashi, T., 2007. Interannual and decadal variability of the oceanic carbon sink in the North Atlantic subpolar gyre. Tellus B: Chemical and Physical Meteorology, 59(2), pp.168-178. 
+Costanza, R., De Groot, R., Sutton, P., Van der Ploeg, S., Anderson, S.J., Kubiszewski, I., Farber, S. and Turner, R.K., 2014. Changes in the global value of ecosystem services. Global environmental change, 26, pp.152-158.
+Cross, W.F., Hood, J.M., Benstead, J.P., Huryn, A.D. and Nelson, D., 2015. Interactions between temperature and nutrients across levels of ecological organization. Global change biology, 21(3), pp.1025-1040.
+Falkowski, P.G. and Raven, J.A., 2013. Aquatic photosynthesis. Princeton University Press. 37 
+Falkowski, P., Scholes, R.J., Boyle, E.E.A., Canadell, J., Canfield, D., Elser, J., Gruber, N., Hibbard, K., Högberg, P., Linder, S. and Mackenzie, F.T., 2000. The global carbon cycle: a test of our knowledge of earth as a system. science, 290(5490), pp.291-296.
+Field, C.B., Behrenfeld, M.J., Randerson, J.T. and Falkowski, P., 1998. Primary production of the biosphere: integrating terrestrial and oceanic components. science, 281(5374), pp.237-240.
+Jones, S.H., 2000. A technical characterization of estuarine and coastal New Hampshire.
+Moore, T.S., 2008. Dynamics of phytoplankton community composition in the western Gulf of Maine. University of New Hampshire.
+Paasche, E., 2001. A review of the coccolithophorid Emiliania huxleyi (Prymnesiophyceae), with particular reference to growth, coccolith formation, and calcification-photosynthesis interactions. Phycologia, 40(6), pp.503-529. 39 
+Pansch, C., Schaub, I., Havenhand, J. and Wahl, M., 2014. Habitat traits and food availability determine the response of marine invertebrates to ocean acidification. Global Change Biology, 20(3), pp.765-777. 
+Pershing, A.J., Alexander, M.A., Hernandez, C.M., Kerr, L.A., Le Bris, A., Mills, K.E., Nye, J.A., Record, N.R., Scannell, H.A., Scott, J.D. and Sherwood, G.D., 2015. Slow adaptation in the face of rapid warming leads to collapse of the Gulf of Maine cod fishery. Science, 350(6262), pp.809-812.
+Short, F.T., 1992. The ecology of the Great Bay Estuary, New Hampshire and Maine: an estuarine profile and bibliography.
+Sommer, U., Peter, K.H., Genitsaris, S. and Moustaka‐Gouni, M., 2017. Do marine phytoplankton follow B ergmann's rule sensu lato?. Biological Reviews, 92(2), pp.1011-1026. 
+</pre>
